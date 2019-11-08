@@ -1,21 +1,27 @@
 const https = require('https');
-const apikey = 'SOmUSQH5ed3DnQqYfKAleVz0VRMuYNdMBSVYccYN'
+const myapikey = 'SOmUSQH5ed3DnQqYfKAleVz0VRMuYNdMBSVYccYN'
 const username = 'Mr_Handy'
+const challonge = require('challonge');
+const Promise = require('promise');
+//const url = 'VictoryRoad110'
+let getPlayerSet = (url) => {
+	return new Promise( (resolve, reject) => {
+	const client = challonge.createClient({
+		apiKey: myapikey
+	});
 
-https.get('https://'+username+':'+ apikey+'@api.challonge.com/v1/tournaments/VictoryRoad110/participants.json', (resp) => {
-  let data = '';
-
-  // A chunk of data has been recieved.
-  resp.on('data', (chunk) => {
-    data += chunk;
-  });
-  console.log(resp);
-
-  // The whole response has been received. Print out the result.
-  resp.on('end', () => {
-    console.log(JSON.parse(data).explanation);
-  });
-
-}).on("error", (err) => {
-  console.log("Error: " + err.message);
-});
+	var playerSet = new Set()
+	client.participants.index({
+	  id: url,
+	  callback: (err, data) => {
+		//console.log(err, data);
+		
+		for (var i = 0; i < Object.keys(data).length; i++){
+			playerSet.add(data[i]["participant"]["name"]);
+		}
+		resolve(playerSet)
+	  }
+	});
+	});
+};
+module.exports.getPlayerSet = getPlayerSet;

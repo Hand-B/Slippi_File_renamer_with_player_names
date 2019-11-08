@@ -1,13 +1,32 @@
 const { default: SlippiGame } = require('slp-parser-js');
-
-var renameFiles = function renameFiles(characterIDs,playerData){
-	//console.log(playerData);
+const brackets = require("./brackets");
+var renameFiles = async function renameFiles(characterIDs,playerData,url=""){
 	var fs = require('fs');
+	//console.log(playerData);
+	debugFile = "debug.txt"
+	fs.writeFile(debugFile,"Debug File\n",function(){});
+	var tourneyPlayers = new Set();
+	var nameWidth = 5;
+	if (url != ""){
+		tourneyPlayers = await brackets.getPlayerSet(url);
+	}
+	var priorityPlayers = new Set([...Object.keys(playerData)].filter(i => tourneyPlayers.has(i)));
+	var validNonPriorityPlayers = new Set([...Object.keys(playerData)].filter(i => !tourneyPlayers.has(i)));
+	
+	//Add prirority Players to debug
+	var fullDebugText = "Valid Players At Tournament: "
+	for (pPlayer of priorityPlayers){
+		fullDebugText += " "+pPlayer +","
+	}
+	fullDebugText = fullDebugText.slice(0, -1) + "\n";
 	const files = fs.readdirSync('./');//list of filenames 
 	var slipfmt = new RegExp('.+\.slp');
 	var gameID = 0;
 	for( var i = 0; i < files.length ; i++){
+		
 		if( slipfmt.test(files[i])){
+			fullDebugText += "-----------------------"+"\n"
+			fullDebugText += "--------Game "+gameID+"------------\n"
 			console.log(files[i]);
 			const game = new SlippiGame(files[i]);
 			const settings = game.getSettings()["players"];
@@ -28,16 +47,17 @@ var renameFiles = function renameFiles(characterIDs,playerData){
 				var characterColor = characterIDs[charID][colorID+1];
 				console.log(characterName,characterColor);
 				var maxCert = 0;
+				var nameDict = {}; // entries in form [player#,team#, bestname]
 				var nameList = []; // entries in form [player#,team#, bestname]
-				
+		
 				for (const [key, value] of Object.entries(playerData)) {
 				  if (value != [] && key != "Player Name"){
 					var cernt = certiantyOfMatch (value, nametag, characterName, characterColor);
-					nameList.push([key,cernt]);
+					nameDict[key] = cernt
 				  }
 				}
 				//sort the list best match first
-				nameList.sort(function(a, b){return b[1] - a[1]});
+				nameList = Object.entries(nameDict).sort(function(a, b){return b[1] - a[1]});
 				//check if best match is >= 100 i.e. it matched the tag
 				var bestName = ""
 				//if tag matched best name is the players
@@ -52,6 +72,48 @@ var renameFiles = function renameFiles(characterIDs,playerData){
 				// add to player list for file rename 
 				
 				renameData.push([playerID,teamID,bestName]);
+
+				var highProbability = [];
+				for (const nameP of priorityPlayers){
+					highProbability.push([nameP,nameDict[nameP]]);
+				}
+				var lowProbability = [];
+				for (const nameP of validNonPriorityPlayers){
+					lowProbability.push([nameP,nameDict[nameP]]);
+				}
+				fullDebugText += "---------  "+ characterName + " Team: "+teamID;
+				fullDebugText += " Port: "+currPlayer["port"]+"  ---------\n";
+				// Add non-zero high-priorityPlayers and non-zero alternative players to output
+				if (nameList[0][1] > 0){	
+					fullDebugText += "High Priority Macthes \n"
+					var currCol = 0;
+					for ([nameP,value] of highProbability){
+						if (value > 0){
+							fullDebugText +=  nameP + " : " +  value
+							if ((currCol+1) >= nameWidth){
+								fullDebugText += "\n"
+							}else{
+								fullDebugText+=" || "
+							}
+							currCol = (currCol +1)% nameWidth;
+						}
+					}
+					fullDebugText += "\n";
+					fullDebugText += "Lower Priority Macthes \n";
+					currCol = 0;
+					for ([nameP,value] of lowProbability){
+						if (value > 0){
+							fullDebugText +=  nameP + " : " +  value
+							if ((currCol+1) >= nameWidth){
+								fullDebugText += "\n"
+							}else{
+								fullDebugText+=" || "
+							}
+							currCol = (currCol +1)% nameWidth;
+						}
+					}
+				}
+				fullDebugText += "\n";
 			}
 			
 			
@@ -60,6 +122,7 @@ var renameFiles = function renameFiles(characterIDs,playerData){
 			gameID +=1; // inc game ID so each game has a uniqueID
 		}
 	}
+	fs.appendFile(debugFile,fullDebugText,function(){});
 };
 module.exports.renameFiles = renameFiles;
 

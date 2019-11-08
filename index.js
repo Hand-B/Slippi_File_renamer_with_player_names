@@ -111,7 +111,12 @@ function renameFile(auth) {
 		}
 		playerDone = true;
 		var slipp = require("./script");
-		slipp.renameFiles(characterIDS,playerData);
+		var args = process.argv.slice(2);
+		var url = "";
+		if (args.length > 0){
+			url = args[0];
+		}
+		slipp.renameFiles(characterIDS,playerData,url);
 	  });
   });
 }
