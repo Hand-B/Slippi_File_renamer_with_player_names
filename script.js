@@ -13,8 +13,15 @@ var renameFiles = async function renameFiles(characterIDs,playerData,url=""){
 	var priorityPlayers = new Set([...Object.keys(playerData)].filter(i => tourneyPlayers.has(i)));
 	var validNonPriorityPlayers = new Set([...Object.keys(playerData)].filter(i => !tourneyPlayers.has(i)));
 	
+	
 	//Add prirority Players to debug
-	var fullDebugText = "Valid Players At Tournament: "
+	var fullDebugText = "ALL Players At Tournament: "
+	for (pPlayer of tourneyPlayers){
+		fullDebugText += " "+pPlayer +","
+	}
+	fullDebugText = fullDebugText.slice(0, -1) + "\n";
+	//Add prirority Players to debug
+	var fullDebugText += "Valid Players At Tournament: "
 	for (pPlayer of priorityPlayers){
 		fullDebugText += " "+pPlayer +","
 	}
