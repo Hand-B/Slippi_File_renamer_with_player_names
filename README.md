@@ -7,3 +7,5 @@ If You want to run this program you will need to have the ability to view the Ma
 
 https://developers.google.com/sheets/api/quickstart/nodejs
 
+This Project Has Dependencies with google apis, challonge, and slippi.
+
