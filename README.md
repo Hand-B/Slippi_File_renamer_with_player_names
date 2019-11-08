@@ -9,3 +9,4 @@ https://developers.google.com/sheets/api/quickstart/nodejs
 
 This Project Has Dependencies with google apis, challonge, and slippi.
 
+An Example of Renamed Vods Can Be seen at MSU's vod bank : https://drive.google.com/drive/folders/1Ctk6ky4bO7MxffVbt34cQwFzqKZp6E9D?usp=sharing
