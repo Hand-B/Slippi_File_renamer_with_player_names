@@ -4,10 +4,11 @@ const username = 'Mr_Handy'
 const challonge = require('challonge');
 const Promise = require('promise');
 //const url = 'VictoryRoad110'
-let getPlayerSet = (url) => {
+let getPlayerSet = (url,subd = "") => {
 	return new Promise( (resolve, reject) => {
 	const client = challonge.createClient({
-		apiKey: myapikey
+		apiKey: myapikey,
+		subdomain: subd
 	});
 
 	var playerSet = new Set()

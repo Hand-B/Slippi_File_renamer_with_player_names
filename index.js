@@ -113,10 +113,14 @@ function renameFile(auth) {
 		var slipp = require("./script");
 		var args = process.argv.slice(2);
 		var url = "";
+		var subdomain = "";
 		if (args.length > 0){
 			url = args[0];
 		}
-		slipp.renameFiles(characterIDS,playerData,url);
+		if (args.length > 1){
+			subdomain = args[1];
+		}
+		slipp.renameFiles(characterIDS,playerData,url,subdomain);
 	  });
   });
 }

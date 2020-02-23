@@ -1,6 +1,7 @@
 const { default: SlippiGame } = require('slp-parser-js');
 const brackets = require("./brackets");
-var renameFiles = async function renameFiles(characterIDs,playerData,url=""){
+const fuzz = require('fuzzball');
+var renameFiles = async function renameFiles(characterIDs,playerData,url="",subdomain = ""){
 	var fs = require('fs');
 	//console.log(playerData);
 	debugFile = "debug.txt"
@@ -8,20 +9,28 @@ var renameFiles = async function renameFiles(characterIDs,playerData,url=""){
 	var tourneyPlayers = new Set();
 	var nameWidth = 5;
 	if (url != ""){
-		tourneyPlayers = await brackets.getPlayerSet(url);
+		tourneyPlayers = await brackets.getPlayerSet(url,subdomain);
 	}
-	var priorityPlayers = new Set([...Object.keys(playerData)].filter(i => tourneyPlayers.has(i)));
-	var validNonPriorityPlayers = new Set([...Object.keys(playerData)].filter(i => !tourneyPlayers.has(i)));
+	//Fuzzy match turney players to known players
+	var priorityPlayers = new Set([...Object.keys(playerData)].filter(function(i){ 
+			for (tPlayer of tourneyPlayers){
+				if (fuzz.partial_ratio(i,tPlayer) > 95){
+					return true;
+				}
+			}
+			return false;
+			}));
+	var validNonPriorityPlayers = new Set([...Object.keys(playerData)].filter(i => !priorityPlayers.has(i)));
 	
 	
 	//Add prirority Players to debug
-	var fullDebugText = "ALL Players At Tournament: "
+	var fullDebugText = "ALL Players At Tournament: ";
 	for (pPlayer of tourneyPlayers){
 		fullDebugText += " "+pPlayer +","
 	}
 	fullDebugText = fullDebugText.slice(0, -1) + "\n";
 	//Add prirority Players to debug
-	var fullDebugText += "Valid Players At Tournament: "
+	fullDebugText += "Valid Players At Tournament: ";
 	for (pPlayer of priorityPlayers){
 		fullDebugText += " "+pPlayer +","
 	}
@@ -37,7 +46,7 @@ var renameFiles = async function renameFiles(characterIDs,playerData,url=""){
 			console.log(files[i]);
 			const game = new SlippiGame(files[i]);
 			const settings = game.getSettings()["players"];
-			console.log(settings);
+			//console.log(settings);
 			var isTeamGame = game.getSettings()["isTeams"];
 			var needVerifiy = false;
 			var renameData = [];
